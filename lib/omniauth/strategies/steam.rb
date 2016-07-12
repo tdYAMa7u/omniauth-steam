@@ -23,7 +23,7 @@ module OmniAuth
             "Profile" => player["profileurl"],
             "FriendList" => friend_list_url
           }
-        }        
+        }
         rescue MultiJson::ParseError => exception
           fail!(:steamError, exception)
           {}
@@ -42,11 +42,15 @@ module OmniAuth
       private
 
       def raw_info
-          @raw_info ||= options.api_key ? MultiJson.decode(Net::HTTP.get(player_profile_uri)) : {}
+        @raw_info ||= options.api_key ? MultiJson.decode(Net::HTTP.get(player_profile_uri)) : {}
       end
 
       def player
+        begin
           @player ||= raw_info["response"]["players"].first
+        rescue NoMethodError
+          {}
+        end
       end
 
       def steam_id
@@ -54,11 +58,11 @@ module OmniAuth
       end
 
       def player_profile_uri
-        URI.parse("http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=#{options.api_key}&steamids=#{steam_id}")
+        URI.parse("https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=#{options.api_key}&steamids=#{steam_id}")
       end
 
       def friend_list_url
-        URI.parse("http://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key=#{options.api_key}&steamid=#{steam_id}&relationship=friend")
+        URI.parse("https://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key=#{options.api_key}&steamid=#{steam_id}&relationship=friend")
       end
     end
   end
